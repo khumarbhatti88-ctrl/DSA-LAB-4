@@ -1,0 +1,253 @@
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;limits&gt;
+using namespace std;
+struct BookRequestNode
+{
+int studentID;
+string studentName;
+int bookID;
+string bookTitle;
+int priority;
+BookRequestNode* next;
+};
+class PriorityQueue
+{
+private:
+BookRequestNode* front;
+BookRequestNode* rear;
+int count;
+public:
+PriorityQueue()
+{
+front = nullptr;
+rear = nullptr;
+count = 0;
+}
+void Add(BookRequestNode* request)
+{
+request-&gt;next = nullptr;
+if (front == nullptr)
+{
+front = rear = request;
+}
+
+Lab 04 — Priority Queue | Page 3
+else if (request-&gt;priority &lt; front-&gt;priority)
+{
+request-&gt;next = front;
+front = request;
+}
+else
+{
+BookRequestNode* current = front;
+while (current-&gt;next != nullptr &amp;&amp;
+current-&gt;next-&gt;priority &lt;= request-&gt;priority)
+{
+current = current-&gt;next;
+}
+request-&gt;next = current-&gt;next;
+current-&gt;next = request;
+if (request-&gt;next == nullptr)
+rear = request;
+}
+count++;
+}
+BookRequestNode* Remove()
+{
+if (front == nullptr)
+return nullptr;
+BookRequestNode* request = front;
+front = front-&gt;next;
+if (front == nullptr)
+rear = nullptr;
+request-&gt;next = nullptr;
+count--;
+return request;
+}
+bool IsEmpty()
+{
+return front == nullptr;
+}
+bool IsNotEmpty()
+{
+return front != nullptr;
+}
+
+Lab 04 — Priority Queue | Page 4
+
+void PrintQueue()
+{
+if (IsEmpty())
+{
+cout &lt;&lt; &quot;No pending requests.\\n&quot;;
+return;
+}
+BookRequestNode* current = front;
+while (current != nullptr)
+{
+cout &lt;&lt; &quot;\\nStudent ID: &quot; &lt;&lt; current-&gt;studentID
+&lt;&lt; &quot;\\nStudent Name: &quot; &lt;&lt; current-&gt;studentName
+&lt;&lt; &quot;\\nBook ID: &quot; &lt;&lt; current-&gt;bookID
+&lt;&lt; &quot;\\nBook Title: &quot; &lt;&lt; current-&gt;bookTitle
+&lt;&lt; &quot;\\nPriority: &quot; &lt;&lt; current-&gt;priority
+&lt;&lt; &quot;\\n-----------------------------\\n&quot;;
+current = current-&gt;next;
+}
+}
+PriorityQueue(const PriorityQueue&amp; other)
+{
+front = rear = nullptr;
+count = 0;
+BookRequestNode* current = other.front;
+while (current != nullptr)
+{
+BookRequestNode* node = new BookRequestNode;
+node-&gt;studentID = current-&gt;studentID;
+node-&gt;studentName = current-&gt;studentName;
+node-&gt;bookID = current-&gt;bookID;
+node-&gt;bookTitle = current-&gt;bookTitle;
+node-&gt;priority = current-&gt;priority;
+node-&gt;next = nullptr;
+Add(node);
+current = current-&gt;next;
+}
+}
+PriorityQueue&amp; operator=(const PriorityQueue&amp; other)
+{
+if (this == &amp;other)
+return *this;
+while (front != nullptr)
+{
+BookRequestNode* temp = front;
+
+Lab 04 — Priority Queue | Page 5
+
+front = front-&gt;next;
+delete temp;
+}
+rear = nullptr;
+count = 0;
+BookRequestNode* current = other.front;
+while (current != nullptr)
+{
+BookRequestNode* node = new BookRequestNode;
+node-&gt;studentID = current-&gt;studentID;
+node-&gt;studentName = current-&gt;studentName;
+node-&gt;bookID = current-&gt;bookID;
+node-&gt;bookTitle = current-&gt;bookTitle;
+node-&gt;priority = current-&gt;priority;
+node-&gt;next = nullptr;
+Add(node);
+current = current-&gt;next;
+}
+return *this;
+}
+~PriorityQueue()
+{
+while (front != nullptr)
+{
+BookRequestNode* temp = front;
+front = front-&gt;next;
+delete temp;
+}
+rear = nullptr;
+}
+};
+BookRequestNode* CreateRequest(int studentID, string studentName,
+int bookID, string bookTitle, int priority)
+{
+BookRequestNode* request = new BookRequestNode;
+request-&gt;studentID = studentID;
+request-&gt;studentName = studentName;
+request-&gt;bookID = bookID;
+request-&gt;bookTitle = bookTitle;
+request-&gt;priority = priority;
+request-&gt;next = nullptr;
+return request;
+}
+int main()
+{
+PriorityQueue requests;
+
+Lab 04 — Priority Queue | Page 6
+
+int choice;
+do
+{
+cout &lt;&lt; &quot;\\n===== Library Book Request System =====\\n&quot;;
+cout &lt;&lt; &quot;1. Add Book Request\\n&quot;;
+cout &lt;&lt; &quot;2. Process Highest Priority Request\\n&quot;;
+cout &lt;&lt; &quot;3. Display All Requests\\n&quot;;
+cout &lt;&lt; &quot;4. Check Queue Status\\n&quot;;
+cout &lt;&lt; &quot;5. Exit\\n&quot;;
+cout &lt;&lt; &quot;Enter your choice: &quot;;
+cin &gt;&gt; choice;
+if (choice == 1)
+{
+int studentID, bookID, priority;
+string studentName, bookTitle;
+cout &lt;&lt; &quot;Enter Student ID: &quot;;
+cin &gt;&gt; studentID;
+cin.ignore(numeric_limits&lt;streamsize&gt;::max(), &#39;\\n&#39;);
+cout &lt;&lt; &quot;Enter Student Name: &quot;;
+getline(cin, studentName);
+cout &lt;&lt; &quot;Enter Book ID: &quot;;
+cin &gt;&gt; bookID;
+cin.ignore(numeric_limits&lt;streamsize&gt;::max(), &#39;\\n&#39;);
+cout &lt;&lt; &quot;Enter Book Title: &quot;;
+getline(cin, bookTitle);
+cout &lt;&lt; &quot;Enter Priority (1=Urgent, 2=Assignment, 3=Normal): &quot;;
+cin &gt;&gt; priority;
+if (priority &lt; 1 || priority &gt; 3)
+{
+cout &lt;&lt; &quot;Invalid priority. Request was not added.\\n&quot;;
+}
+else
+{
+requests.Add(CreateRequest(studentID, studentName,
+bookID, bookTitle, priority));
+cout &lt;&lt; &quot;Request added successfully.\\n&quot;;
+}
+}
+else if (choice == 2)
+{
+BookRequestNode* processed = requests.Remove();
+
+Lab 04 — Priority Queue | Page 7
+
+if (processed == nullptr)
+{
+cout &lt;&lt; &quot;Queue is empty. Nothing to process.\\n&quot;;
+}
+else
+{
+cout &lt;&lt; &quot;\\nProcessing highest-priority request:\\n&quot;;
+cout &lt;&lt; &quot;Student: &quot; &lt;&lt; processed-&gt;studentName &lt;&lt; &#39;\\n&#39;;
+cout &lt;&lt; &quot;Book: &quot; &lt;&lt; processed-&gt;bookTitle &lt;&lt; &#39;\\n&#39;;
+cout &lt;&lt; &quot;Priority: &quot; &lt;&lt; processed-&gt;priority &lt;&lt; &#39;\\n&#39;;
+delete processed;
+}
+}
+else if (choice == 3)
+{
+requests.PrintQueue();
+}
+else if (choice == 4)
+{
+if (requests.IsEmpty())
+cout &lt;&lt; &quot;Queue status: EMPTY\\n&quot;;
+else
+cout &lt;&lt; &quot;Queue status: NOT EMPTY\\n&quot;;
+}
+else if (choice == 5)
+{
+cout &lt;&lt; &quot;Exiting program. Memory will be released.\\n&quot;;
+}
+else
+{
+cout &lt;&lt; &quot;Invalid choice. Please select 1 to 5.\\n&quot;;
+}
+} while (choice != 5);
+return 0;
+}
